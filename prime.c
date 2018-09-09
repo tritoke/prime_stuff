@@ -20,8 +20,11 @@ int main() {
 	long long upper_limit;
 	puts("enter the number you wish to find primes below");
 	scanf("%lli", &upper_limit);  	//scans the number that the user enters
-	upper_limit = abs(upper_limit); //makes the number positive so that everything works nicely
-	printf("finding all the primes under: ");
+	if (upper_limit < 0) {
+        puts("can't find negative primes :/");
+        exit(0);
+    }
+    printf("finding all the primes under: ");
     printf("%lli", upper_limit);
 	puts("\ncreating bit array");
     long long numInts = (upper_limit/32)+((upper_limit%32==0)?0:1); 
