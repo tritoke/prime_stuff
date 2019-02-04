@@ -19,7 +19,7 @@ int main() {
    
 	long long upper_limit;
 	puts("enter the number you wish to find primes below");
-	scanf("%lli", &upper_limit);  	//scans the number that the user enters
+	scanf("%lli", &upper_limit);  
 	if (upper_limit < 0) {
         puts("can't find negative primes :/");
         exit(0);
@@ -86,5 +86,5 @@ int main() {
     free(bitArray);
     puts("memory freed");
     puts("exiting");
-	return 0;
+    return 0;
 }
