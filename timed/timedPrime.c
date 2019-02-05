@@ -8,8 +8,8 @@
 
 int main() {
    
-	int upper_limit = 200000000;
-  int numInts = 6250000; 
+	int upper_limit = 10000000;
+  int numInts = upper_limit/32; 
   int * bitArray;
   bitArray = malloc(numInts * sizeof(int));
    
@@ -27,16 +27,16 @@ int main() {
     char checkResult = CHECK_BIT(bitArray[i/32],i%32);
       if (checkResult == 1) {
         for (long long j = i*i; j < upper_limit; j+=i){
-          ZERO_BIT(bitArray[j/32],j%32);
+          ZERO_BIT(bitArray[j/32],j);
       }
 		}
 	}
 
 	FILE *fptr;
-	fptr = fopen("../prime_output", "w");
+	fptr = fopen("primes", "w");
 
 	for (long long i = 0; i < upper_limit; i++) {
-		if (CHECK_BIT(bitArray[i/32],i%32) == 1) {
+		if (CHECK_BIT(bitArray[i/32],i)) {
 			fprintf(fptr, "%lli\n", i);
 		}
 	}

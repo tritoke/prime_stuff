@@ -16,20 +16,19 @@ long double square_root(long double n) {
 }
 
 int main() {
-   
-	long long upper_limit;
+  long long upper_limit;
 	puts("enter the number you wish to find primes below");
 	scanf("%lli", &upper_limit);  
 	if (upper_limit < 0) {
-        puts("can't find negative primes :/");
-        exit(0);
-    }
-    printf("finding all the primes under: ");
-    printf("%lli", upper_limit);
+    puts("can't find negative primes :/");
+    exit(0);
+  }
+  printf("finding all the primes under: ");
+  printf("%lli", upper_limit);
 	puts("\ncreating bit array");
-    long long numInts = (upper_limit/32)+((upper_limit%32==0)?0:1); 
-    int * bitArray;
-    bitArray = malloc(numInts * sizeof(int));
+  long long numInts = (upper_limit/32)+((upper_limit%32==0)?0:1); 
+  int * bitArray;
+  bitArray = malloc(numInts * sizeof(int));
    
 	puts("initializing bit array");
 
@@ -39,7 +38,7 @@ int main() {
 		} else {
 			bitArray[i] = 0xFFFFFFFF;
 		}
-	} //this sets up the bit array with indices 0 and 1 being false, and the rest being true	
+	} 
 	
 	puts("array initialized");
 
@@ -48,17 +47,10 @@ int main() {
 	puts("sieving primes");
 
 	for (long long i = 0; i < root_limit; i++) {
-        //printf("%x \t %lli\n", bitArray[i/32], i);
-        char checkResult = CHECK_BIT(bitArray[i/32],i%32);
-        //printf("bit at position %lld of bitArray[%lld] = %d\n", i%32, i/32, checkResult);
-        if (checkResult == 1) {
-            //printf("%d\n",checkResult);
-			//printf("i*i = %lli, upper_limit = %lli", i*i, upper_limit);
-            for (long long j = i*i; j < upper_limit; j+=i){
-				//printf("%lli\n", j);
-                ZERO_BIT(bitArray[j/32],j%32);
-			    //printf("bit %lld of bitArray[%lld] 0=%d\n", j%32, j/32, CHECK_BIT(bitArray[j/32],j%32));
-            }
+    if (CHECK_BIT(bitArray[i/32],i)) {
+      for (long long j = i*i; j < upper_limit; j+=i){
+        ZERO_BIT(bitArray[j/32],j);
+      }
 		}
 	}
 
@@ -66,7 +58,8 @@ int main() {
 	puts("opening file for writing");
 
 	FILE *fptr;
-	fptr = fopen("../prime_output", "w");
+  char *fname = "primes";
+	fptr = fopen(fname, "w");
 	if (fptr == NULL) {
 		puts("Error: couldn't create file.");
 		return 1;
@@ -74,17 +67,23 @@ int main() {
 	
 	puts("writing to file");
 	for (long long i = 0; i < upper_limit; i++) {
-		if (CHECK_BIT(bitArray[i/32],i%32) == 1) {
+		if (CHECK_BIT(bitArray[i/32],i)) {
 			fprintf(fptr, "%lli\n", i);
 		}
 	}
-	puts("file written to ../prime_output");
+	
+  printf("file written to %s", fname);
 	puts("closing file");
-	fclose(fptr);
-	puts("file closed");
+	
+  fclose(fptr);
+	
+  puts("file closed");
 	puts("freeing memory");
-    free(bitArray);
-    puts("memory freed");
-    puts("exiting");
-    return 0;
+  
+  free(bitArray);
+  
+  puts("memory freed");
+  puts("exiting");
+  
+  return 0;
 }

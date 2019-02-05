@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <stdint.h>
 #include <cmath>
@@ -14,28 +15,30 @@ int main(void) {
   int64_t sqrt_lim = (int64_t) std::sqrt(limit);
   int64_t segment_size = (int64_t) std::sqrt(L1_CACHE_SIZE);
   
-  int32_t sieve[segment_size];
+  bool sieve[segment_size];
 
   /* generate sieving primes */
   std::vector<int64_t> sieving_primes;
+  
   int64_t num_ints = (sqrt_lim/32) + ((sqrt_lim%32==0)?0:1);
   int32_t bit_array[num_ints];
+  
   bit_array[0] = 0x3FFFFFFF;
   for (int i = 1; i < num_ints; i++) {
     bit_array[i] = 0xFFFFFFFF;
   }
+  
   int64_t lim = (int64_t) std::sqrt(sqrt_lim);
   for (int64_t i = 0; i < lim; i++) {
-    if (CHECK_BIT(bit_array[i/32],i%32)) {
-      for (int64_t j = i*i; j < lim; j += i) ZERO_BIT(bit_array[j/32],j%32);
+    if (CHECK_BIT(bit_array[i/32],i)) {
+      for (int64_t j = i*i; j < sqrt_lim; j+=i) ZERO_BIT(bit_array[j/32],j);
     }
   }
 
-  for (int64_t i = 0; i < lim; i++) {
+  for (int64_t i = 0; i < sqrt_lim; i++) {
     /* look at removing the %32 from checkbit */
     if (CHECK_BIT(bit_array[i/32],i%32)) sieving_primes.push_back(i); 
   }
-  for (int64_t sp : sieving_primes) std::cout << sp << "\n";
   /* the sieving primes */
   int64_t * sps = sieving_primes.data();
   /* current multiples of the sieving primes */
@@ -43,31 +46,37 @@ int main(void) {
   for (size_t i = 0; i < sieving_primes.size(); i++) sp_mults[i] = 1;
   /* number of sieving primes */
   int64_t num_sps = sieving_primes.size();
+
   /* main sieving loop */
   std::vector<int64_t> primes;
+  
   for (int64_t low = 0; low <= limit; low += segment_size) {
-    /* reset segment */
     for (int64_t j = 0; j < segment_size; j++) {
-      sieve[j] = 0xFFFFFFFF;
+      sieve[j] = true;
     }
-    if (!low) sieve[0] = 0x3FFFFFFF;
+    if (!low) sieve[0] = sieve[1] = false;
     
     int64_t high = low + segment_size - 1;
     high = std::min(limit, high);
     
     for (int64_t i = 0; i < num_sps; i++) {
-      for (int64_t composite = sps[i]*sp_mults[i]%segment_size;
-           composite < high;
-           composite = (sps[i]*(++sp_mults[i]))%segment_size) {
-        ZERO_BIT(sieve[composite/32], composite%32); 
+      for (int64_t n = sps[i]*sp_mults[i];
+           n <= high;
+           n+=sps[i], sp_mults[i]++) {
+        sieve[n%segment_size] = (sp_mults[i]==1)?true:false; 
       }
     }
-
-    /* add new primes */
-    for (int64_t i=0;i<segment_size;i++) if (CHECK_BIT(sieve[i/32],i%32)) primes.push_back(low+i);
+    
+    for (int64_t i=0;i<segment_size && (low+i) < limit;i++) {
+      if (sieve[i]) {
+        primes.push_back(low+i);
+      }
+    }
   }
-  
-  for (int64_t prime : primes) std::cout << prime << "\n";
-
+  std::string fname = "primes";
+  std::ofstream outfile;
+  outfile.open(fname);
+  for (int64_t prime : primes) outfile << prime << "\n";
+  outfile.close();
   return 0;
 }
